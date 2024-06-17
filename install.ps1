@@ -189,13 +189,13 @@ if ($openPorts -ne $requiredPorts) {
         Write-Output "Port numbers have been successfully updated in $dockerFilePath"
     }
 
-    # Update backend/Dockerfile with new port 0
-    if($openPorts[0] -ne $requiredPorts[0]) {
+    # Update backend/Dockerfile with new port 1
+    if($openPorts[1] -ne $requiredPorts[1]) {
         $backendDockerFilePath = "$($config.billingDatabasePath)\BillingDatabaseFiles\backend\Dockerfile"
         $backendDockerFile = Get-Content $backendDockerFilePath
         $updatedBackendDockerFile = $backendDockerFile | ForEach-Object {
             if ($_ -match 'EXPOSE') {
-                return "EXPOSE $($openPorts[0])"
+                return "EXPOSE $($openPorts[1])"
             } else {
                 return $_
             }
@@ -204,13 +204,28 @@ if ($openPorts -ne $requiredPorts) {
         Write-Output "Port numbers have been successfully updated in $backendDockerFilePath"
     }
 
+    # Update frontend/Dockerfile with new port 0
+    if($openPorts[0] -ne $requiredPorts[0]) {
+        $frontendDockerFilePath = "$($config.billingDatabasePath)\BillingDatabaseFiles\frontend\Dockerfile"
+        $frontendDockerFile = Get-Content $frontendDockerFilePath
+        $updatedFrontendDockerFile = $frontendDockerFile | ForEach-Object {
+            if ($_ -match 'EXPOSE') {
+                return "EXPOSE $($openPorts[0])"
+            } else {
+                return $_
+            }
+        }
+        $updatedFrontendDockerFile | Set-Content $frontendDockerFilePath
+        Write-Output "Port numbers have been successfully updated in $frontendDockerFilePath"
+    }
+
     # Update frontend/Dockerfile with new port 1
     if($openPorts[1] -ne $requiredPorts[1]) {
         $frontendDockerFilePath = "$($config.billingDatabasePath)\BillingDatabaseFiles\frontend\Dockerfile"
         $frontendDockerFile = Get-Content $frontendDockerFilePath
         $updatedFrontendDockerFile = $frontendDockerFile | ForEach-Object {
-            if ($_ -match 'EXPOSE') {
-                return "EXPOSE $($openPorts[1])"
+            if ($_ -match 'ENV SET_BASE_URL=') {
+                return "ENV SET_BASE_URL=""http://localhost:$($openPorts[1])"""
             } else {
                 return $_
             }
