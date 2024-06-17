@@ -1,0 +1,6 @@
+sshKeyPath=C:\path\to\your\ssh\key
+billingDatabasePath=C:\path\to\BillingDatabase
+automationRepository=git@github.com:YourUsername/AutomationRepository.git
+billingDatabaseRepository=git@github.com:YourUsername/BillingDatabaseRepository.git
+portsToCheck=(8080, 8081)  # Default ports to check
+substitutePorts=(8082, 8083, 8084)  # Substitute ports to check if defaults are occupied
