@@ -1,5 +1,3 @@
-# install.ps1
-
 # Load configuration
 $config = Get-Content .\config.txt | ConvertFrom-StringData
 
@@ -46,8 +44,9 @@ function Install-Docker {
     $dockerInstaller = "$env:TEMP\DockerInstaller.exe"
     Invoke-WebRequest -Uri "https://download.docker.com/win/stable/Docker%20Desktop%20Installer.exe" -OutFile $dockerInstaller
     Start-Process -FilePath $dockerInstaller -ArgumentList "/install", "/quiet" -Wait
-    Remove-Item -Path $dockerInstaller
+    # Remove-Item -Path $dockerInstaller
 }
+
 Invoke-Install -path "C:\Program Files\Docker" -installFunction { Install-Docker }
 
 # Function to check if ports are open and replace them if necessary
@@ -196,6 +195,8 @@ if ($openPorts -ne $requiredPorts) {
         $updatedBackendDockerFile = $backendDockerFile | ForEach-Object {
             if ($_ -match 'EXPOSE') {
                 return "EXPOSE $($openPorts[1])"
+            } elseif ($_ -match 'CMD \["flask", "run", "--host=0\.0\.0\.0", "--port=\d+"\]') {
+                return "CMD [`"flask`", `"run`", `"--host=0.0.0.0`", `"--port=$($openPorts[1])`"]"
             } else {
                 return $_
             }
@@ -224,7 +225,7 @@ if ($openPorts -ne $requiredPorts) {
         $frontendDockerFilePath = "$($config.billingDatabasePath)\BillingDatabaseFiles\frontend\Dockerfile"
         $frontendDockerFile = Get-Content $frontendDockerFilePath
         $updatedFrontendDockerFile = $frontendDockerFile | ForEach-Object {
-            if ($_ -match 'ENV SET_BASE_URL=') {
+            if ($_ -match 'ENV SET_BASE_URL="http://localhost:(\d+)"') {
                 return "ENV SET_BASE_URL=""http://localhost:$($openPorts[1])"""
             } else {
                 return $_
